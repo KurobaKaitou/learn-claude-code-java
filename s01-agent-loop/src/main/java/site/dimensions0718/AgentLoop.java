@@ -3,7 +3,10 @@ package site.dimensions0718;
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.community.model.zhipu.ZhipuAiChatModel;
-import dev.langchain4j.data.message.*;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.ToolExecutionResultMessage;
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.internal.Json;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
@@ -16,14 +19,12 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class S01AgentLoop {
+public class AgentLoop {
     /**
      * the function calling specification
      */
@@ -38,7 +39,7 @@ public class S01AgentLoop {
 
     private final ZhipuAiChatModel zhipuAiChatModel;
 
-    public S01AgentLoop() {
+    public AgentLoop() {
         Dotenv dotenv = Dotenv.load();
         String apiKey = dotenv.get("spring.ai.zhipuai.api-key");
         String model = dotenv.get("spring.ai.zhipuai.chat.options.model");
@@ -120,6 +121,11 @@ public class S01AgentLoop {
 
     }
 
+    /**
+     * <font color='red'>core logic</font>
+     *
+     * @param chatMessages chatMessage
+     */
     public void agentLoop(List<ChatMessage> chatMessages) {
         while (true) {
             ChatRequest chatRequest = ChatRequest.builder()
@@ -132,33 +138,18 @@ public class S01AgentLoop {
             chatMessages.add(aiMessage);
             List<ChatMessage> results = new ArrayList<>();
             if (response.finishReason() != FinishReason.TOOL_EXECUTION) {
-                System.out.println(aiMessage.text());
+                System.out.printf("agent response: %s \n", aiMessage.text());
                 return;
             }
+            // foreach toolExecutionRequests get command argument
             for (ToolExecutionRequest toolExecutionRequest : aiMessage.toolExecutionRequests()) {
+                System.out.printf("agent invoke [%s] tool,arguments [%s] \n", toolExecutionRequest.name(), toolExecutionRequest.arguments());
                 String command = toolExecutionRequest.arguments();
                 Command commandClass = Json.fromJson(command, Command.class);
                 String runBashResult = runBash(commandClass.command);
                 results.add(ToolExecutionResultMessage.from(toolExecutionRequest.id(), toolExecutionRequest.name(), runBashResult));
             }
             chatMessages.add(UserMessage.from(results.toString()));
-        }
-    }
-
-    public static void main(String[] args) {
-        S01AgentLoop s01AgentLoop = new S01AgentLoop();
-        ProcessBuilder builder = new ProcessBuilder();
-        String systemPrompt = String.format("You are a coding agent at %s. Use bash to solve tasks. Act, don't explain.", builder.directory(new File(System.getProperty("user.dir"))));
-        List<ChatMessage> chatMessages = new java.util.ArrayList<>(List.of(SystemMessage.from(systemPrompt)));
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            String userMessage = scanner.nextLine();
-            String command = userMessage.strip().toLowerCase(Locale.ROOT);
-            if ("q".equals(command) || "exit".equals(command) || command.isEmpty()) {
-                break;
-            }
-            chatMessages.add(UserMessage.from(userMessage));
-            s01AgentLoop.agentLoop(chatMessages);
         }
     }
 }
