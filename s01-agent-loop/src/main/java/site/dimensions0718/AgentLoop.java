@@ -41,8 +41,8 @@ public class AgentLoop {
 
     public AgentLoop() {
         Dotenv dotenv = Dotenv.load();
-        String apiKey = dotenv.get("spring.ai.zhipuai.api-key");
-        String model = dotenv.get("spring.ai.zhipuai.chat.options.model");
+        String apiKey = dotenv.get("ZHIPU_API_KEY");
+        String model = dotenv.get("MODEL_NAME");
         this.zhipuAiChatModel = ZhipuAiChatModel.builder()
                 .apiKey(apiKey)
                 .model(model)

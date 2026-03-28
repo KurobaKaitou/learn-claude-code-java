@@ -48,9 +48,10 @@ public void agentLoop(List<ChatMessage> chatMessages) {
 > And [AgentLoopMain](src/main/java/site/dimensions0718/AgentLoopMain.java)
 
 ### Try it
-
 ```bash
-cd src/main/java/site/dimensions0718
+mv .env.example .env
+vim .env
+# edit the ZHIPU_API_KEY to your apiKey, save .env file
 run AgentLoopMain.java
 ```
 
