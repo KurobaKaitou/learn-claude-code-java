@@ -1,4 +1,6 @@
-# `S01` The Agent Loop
+# TOOLS & EXECUTION
+
+## `S01` The Agent Loop
 
 ### Bash Is All You Need
 
@@ -48,6 +50,7 @@ public void agentLoop(List<ChatMessage> chatMessages) {
 > And [AgentLoopMain](src/main/java/site/dimensions0718/AgentLoopMain.java)
 
 ### Try it
+
 ```bash
 mv .env.example .env
 vim .env

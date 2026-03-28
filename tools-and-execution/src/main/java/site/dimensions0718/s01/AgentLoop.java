@@ -1,4 +1,4 @@
-package site.dimensions0718;
+package site.dimensions0718.s01;
 
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
