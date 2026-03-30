@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class AgentLoop {
+public class SingleToolAgentLoop {
     /**
      * the function calling specification
      */
@@ -39,7 +39,7 @@ public class AgentLoop {
 
     private final ZhipuAiChatModel zhipuAiChatModel;
 
-    public AgentLoop() {
+    public SingleToolAgentLoop() {
         Dotenv dotenv = Dotenv.load();
         String apiKey = dotenv.get("ZHIPU_API_KEY");
         String model = dotenv.get("MODEL_NAME");

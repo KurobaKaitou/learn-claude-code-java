@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
-public class AgentLoopMain {
+public class SingleToolAgentLoopMain {
     public static void main(String[] args) {
-        AgentLoop agentLoop = new AgentLoop();
+        SingleToolAgentLoop singleToolAgentLoop = new SingleToolAgentLoop();
         String systemPrompt = String.format("You are a coding agent at %s. Use bash to solve tasks. Act, don't explain.", System.getProperty("user.dir"));
         List<ChatMessage> chatMessages = new java.util.ArrayList<>(List.of(SystemMessage.from(systemPrompt)));
         Scanner scanner = new Scanner(System.in);
@@ -22,7 +22,7 @@ public class AgentLoopMain {
                 break;
             }
             chatMessages.add(UserMessage.from(userMessage));
-            agentLoop.agentLoop(chatMessages);
+            singleToolAgentLoop.agentLoop(chatMessages);
         }
     }
 }

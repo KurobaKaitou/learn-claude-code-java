@@ -13,7 +13,7 @@
  * the agent loop core logic
  * @param chatMessages
  */
-public void agentLoop(List<ChatMessage> chatMessages) {
+public void singleToolAgentLoop(List<ChatMessage> chatMessages) {
     // forever loop, when model stop reason != TOOL_EXECUTION break.
     while (true) {
         // build an chatRequest, carried chatMessage, description of tool and maxOutPutTokens
@@ -63,3 +63,43 @@ run AgentLoopMain.java
 > 2. List all Python files in this directory
 > 3. What is the current git branch?
 > 4. Create a directory called test_output and write 3 files in it
+
+## `S02` One Handler Per Tool
+
+> The loop stays the same; new tools register into the dispatch map
+
+### Core Code
+
+```java
+public void agentLoop(List<ChatMessage> chatMessages) throws JsonProcessingException {
+    while (true) {
+        ChatRequest chatRequest = ChatRequest.builder().messages(chatMessages).toolSpecifications(toolSpecifications).maxOutputTokens(8000).build();
+        ChatResponse response = this.zhipuAiChatModel.chat(chatRequest);
+        AiMessage aiMessage = response.aiMessage();
+        chatMessages.add(aiMessage);
+        List<ChatMessage> results = new ArrayList<>();
+        if (response.finishReason() != FinishReason.TOOL_EXECUTION) {
+            System.out.printf("agent response: %s \n", aiMessage.text());
+            return;
+        }
+        // foreach toolExecutionRequests get command argument
+        for (ToolExecutionRequest toolExecutionRequest : aiMessage.toolExecutionRequests()) {
+            System.out.printf("agent invoke [%s] tool,arguments [%s] \n", toolExecutionRequest.name(), toolExecutionRequest.arguments());
+            Map<String, Object> params = objectMapper.readValue(toolExecutionRequest.arguments(), new TypeReference<>() {
+            });
+            String result;
+            // getHandler to handle function calling
+            AbsToolHandler handler = this.getHandler(ToolEnum.get(toolExecutionRequest.name()));
+            if (handler == null) {
+                result = String.format("Unknown tool: %s", toolExecutionRequest.name());
+            } else {
+                result = this.getHandler(ToolEnum.get(toolExecutionRequest.name())).handle(params.values().toArray());
+            }
+            results.add(ToolExecutionResultMessage.from(toolExecutionRequest.id(), toolExecutionRequest.name(), result));
+        }
+        chatMessages.add(UserMessage.from(results.toString()));
+    }
+}
+```
+
+> for details,please refer to: [ToolDispatchMap](src/main/java/site/dimensions0718/s02/ToolDispatchMap.java)
