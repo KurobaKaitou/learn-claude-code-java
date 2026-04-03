@@ -15,42 +15,35 @@ import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.output.FinishReason;
 import io.github.cdimascio.dotenv.Dotenv;
-import site.dimensions0718.s02.enums.ToolEnum;
-import site.dimensions0718.s02.handlers.*;
+import site.dimensions0718.container.ToolHandlerContainer;
+import site.dimensions0718.enums.ToolEnum;
+import site.dimensions0718.handler.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ToolDispatchMap {
 
-    private final Map<ToolEnum, AbsToolHandler> handlerMap;
+    private final ToolHandlerContainer toolHandlerContainer;
     private final ZhipuAiChatModel zhipuAiChatModel;
     private final List<ToolSpecification> toolSpecifications;
     private final ObjectMapper objectMapper;
 
     public ToolDispatchMap() {
         List<AbsToolHandler> handlers = init();
-        this.handlerMap = new HashMap<>();
+        this.toolHandlerContainer = new ToolHandlerContainer();
         this.toolSpecifications = new ArrayList<>();
         Dotenv dotenv = Dotenv.load();
         String apiKey = dotenv.get("ZHIPU_API_KEY");
         String model = dotenv.get("MODEL_NAME");
         this.zhipuAiChatModel = ZhipuAiChatModel.builder().apiKey(apiKey).model(model).build();
-        handlers.forEach(handler -> {
-            this.toolSpecifications.add(ToolSpecifications.toolSpecificationsFrom(handler.getClass()).getFirst());
-            this.handlerMap.put(handler.type(), handler);
-        });
+        handlers.forEach(handler -> this.toolSpecifications.add(ToolSpecifications.toolSpecificationsFrom(handler.getClass()).getFirst()));
         this.objectMapper = new ObjectMapper();
     }
 
     private List<AbsToolHandler> init() {
         return List.of(new BashHandler(), new ReadFileHandler(), new WriteFileHandler(), new EditFileHandler());
-    }
-
-    private AbsToolHandler getHandler(ToolEnum toolEnum) {
-        return handlerMap.get(toolEnum);
     }
 
     /**
@@ -75,11 +68,11 @@ public class ToolDispatchMap {
                 Map<String, Object> params = objectMapper.readValue(toolExecutionRequest.arguments(), new TypeReference<>() {
                 });
                 String result;
-                AbsToolHandler handler = this.getHandler(ToolEnum.get(toolExecutionRequest.name()));
+                AbsToolHandler handler = this.toolHandlerContainer.getHandler(ToolEnum.get(toolExecutionRequest.name()));
                 if (handler == null) {
                     result = String.format("Unknown tool: %s", toolExecutionRequest.name());
                 } else {
-                    result = this.getHandler(ToolEnum.get(toolExecutionRequest.name())).handle(params.values().toArray());
+                    result = handler.handle(params.values().toArray());
                 }
                 results.add(ToolExecutionResultMessage.from(toolExecutionRequest.id(), toolExecutionRequest.name(), result));
             }

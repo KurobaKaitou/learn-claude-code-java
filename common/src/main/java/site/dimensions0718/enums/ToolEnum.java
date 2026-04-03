@@ -1,4 +1,4 @@
-package site.dimensions0718.s02.enums;
+package site.dimensions0718.enums;
 
 public enum ToolEnum {
     BASH,
