@@ -18,6 +18,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import site.dimensions0718.container.ToolHandlerContainer;
 import site.dimensions0718.enums.ToolEnum;
 import site.dimensions0718.handler.*;
+import site.factory.ZhiPuChatModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +35,7 @@ public class ToolDispatchMap {
         List<AbsToolHandler> handlers = init();
         this.toolHandlerContainer = new ToolHandlerContainer();
         this.toolSpecifications = new ArrayList<>();
-        Dotenv dotenv = Dotenv.load();
-        String apiKey = dotenv.get("ZHIPU_API_KEY");
-        String model = dotenv.get("MODEL_NAME");
-        this.zhipuAiChatModel = ZhipuAiChatModel.builder().apiKey(apiKey).model(model).build();
+        this.zhipuAiChatModel = ZhiPuChatModelFactory.createZhiPuChatModel();
         handlers.forEach(handler -> this.toolSpecifications.add(ToolSpecifications.toolSpecificationsFrom(handler.getClass()).getFirst()));
         this.objectMapper = new ObjectMapper();
     }

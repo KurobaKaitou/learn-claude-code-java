@@ -12,7 +12,7 @@ import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.output.FinishReason;
-import io.github.cdimascio.dotenv.Dotenv;
+import site.factory.ZhiPuChatModelFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,13 +40,7 @@ public class SingleToolAgentLoop {
     private final ZhipuAiChatModel zhipuAiChatModel;
 
     public SingleToolAgentLoop() {
-        Dotenv dotenv = Dotenv.load();
-        String apiKey = dotenv.get("ZHIPU_API_KEY");
-        String model = dotenv.get("MODEL_NAME");
-        this.zhipuAiChatModel = ZhipuAiChatModel.builder()
-                .apiKey(apiKey)
-                .model(model)
-                .build();
+        this.zhipuAiChatModel = ZhiPuChatModelFactory.createZhiPuChatModel();
     }
 
     /**
