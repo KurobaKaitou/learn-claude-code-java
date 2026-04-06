@@ -4,7 +4,8 @@ public enum ToolEnum {
     BASH,
     READ_FILE,
     WRITE_FILE,
-    EDIT_FILE;
+    EDIT_FILE,
+    TODO;
 
     public static ToolEnum get(String toolName) {
         for (ToolEnum tool : ToolEnum.values()) {

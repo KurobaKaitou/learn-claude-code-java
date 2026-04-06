@@ -23,6 +23,19 @@
     </properties>
 
     <dependencies>
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version> <!-- 使用最新的版本 -->
+        </dependency>
+
+        <!-- Logback实现 -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version> <!-- 使用最新的版本 -->
+        </dependency>
         <!--        dotenv依赖 用于读取.env文件内容-->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
